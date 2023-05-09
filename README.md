@@ -61,7 +61,7 @@ Este endpoint es un método HttpGet que permite obtener una lista de los tres as
 con potencial de riesgo de impacto en el planeta Tierra entre el día de hoy y una fecha específica 
 en el futuro. 
 
-La ruta relativa para este endpoint es */asteroids?days=xx*, siendo xx los días a añadirle la fecha,
+La ruta relativa para este endpoint es */asteroids?days=xx*, siendo *xx* los días a añadirle la fecha,
 teniendo que estar entre 1 y 7.
 
 ##### Detalles
