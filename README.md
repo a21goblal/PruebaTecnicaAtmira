@@ -100,7 +100,7 @@ Salida:
 ]
 ```
 
->*Los datos obtenidos varían según el día, pues se realiza la peticion a partir de la fecha actual*
+>*Los datos obtenidos varían según el día, pues la peticion se realiza a partir de la fecha actual*
 
 <a name="casos-de-prueba"></a>
 ### Casos de prueba 💊
