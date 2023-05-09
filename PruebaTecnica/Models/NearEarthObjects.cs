@@ -1,5 +1,4 @@
-﻿
-namespace PruebaTecnica.Models
+﻿namespace PruebaTecnica.Models
 {
     public class NearEarthObjects
     {

@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-
-namespace PruebaTecnica.Models
+﻿namespace PruebaTecnica.Models
 {
     public class AproachData
     {

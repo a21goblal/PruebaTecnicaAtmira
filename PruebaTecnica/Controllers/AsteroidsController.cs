@@ -2,17 +2,25 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using PruebaTecnica.Models;
-using System.Runtime.CompilerServices;
 
 namespace PruebaTecnica.Controllers
 {
     [ApiController]
     public class AsteroidsController : Controller
     {
+        // Cliente Http para realizar las consultas a la API
         private readonly HttpClient _httpClient;
+
+        // AutoMapper, necesario para convertir los resultados obtenidos en el ViewModel
         private readonly IMapper _autoMapper;
+
+        // Variable con la fecha de hoy parseada, implementada como variable para futuras
+        // ampliaciones
         private readonly string _today = DateTime.Today.ToString("yyyy-MM-dd");
-        private readonly string _apiKey = "DEMO_KEY";
+
+        // Variable con la key de la API, implementada como variable para futuras modificaciones
+        // de código.
+        private readonly string _apiKey = "DEMO_KEY";     
 
         public AsteroidsController(IMapper mapper)
         {
@@ -21,39 +29,113 @@ namespace PruebaTecnica.Controllers
             _autoMapper = mapper;
         }
 
-        [HttpGet("asteroids/{days}")]
-        public async Task<IActionResult> Index(int days)
+
+        /*
+         * Método GetAsteroids
+         * -------------------
+         * Devuelve una lista de los tres asteroides más grandes con potencial de riesgo de impacto
+         * en el planeta Tierra entre el día de hoy y la fecha obtenida al sumar en días el valor
+         * introducido como parámetro.
+         * 
+         * Ejemplo: /asteroids?days=3
+         * 
+         * Valores admitidos: Entre 1 y 7
+         */
+        [HttpGet("asteroids")]
+        public async Task<IActionResult> GetAsteroids(string days)
         {
-            string endDate = DateTime.Today.AddDays(days).ToString("yyyy-MM-dd");
-            // Solicitud HttpGet a la API
-            HttpResponseMessage response = await _httpClient.GetAsync($"feed?start_date={_today}&end_date={endDate}&api_key={_apiKey}");
-
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                return StatusCode((int)response.StatusCode, response.ReasonPhrase);
-            }
-
-            // Leer la respuesta y convertirla en JSON
-            string json = await response.Content.ReadAsStringAsync();
-
-            // Convertir JSON en objeto
-            var generalInfo = JsonConvert.DeserializeObject<GeneralInfo>(json);
-            List<AsteroidViewModel> asteroidsList = new();
-
-            foreach (string date in generalInfo.near_earth_objects.Keys)
-            {
-                foreach (NearEarthObjects nearObject in generalInfo.near_earth_objects[date])
+                // Condicional que controla si se ha introducido valor.
+                if (days is null)
                 {
-                    if(nearObject.is_potentially_hazardous_asteroid == true )
+                    throw new ArgumentNullException(nameof(days), 
+                        "El valor del parámetro days no puede ser nulo.");
+                }
+
+                // Condicional que controla si se ha introducido número.
+                // En caso de ser correcto, se lo asigna a la variable "parsedDays"
+                int parsedDays;
+                if(!int.TryParse(days, out parsedDays))
+                {
+                    throw new ArgumentNullException(nameof(days), 
+                        "El valor del parámetro days debe ser un número.");
+                }
+
+                // Condicional que comprueba el rango de números a sumar
+                if (parsedDays < 1 || parsedDays > 7)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(days), 
+                        "Introduce un número entre 1 y 7.");
+                }
+
+                // Variable con la fecha final formateada al valor requerido por la URL
+                string endDate = DateTime.Today.AddDays(parsedDays).ToString("yyyy-MM-dd");
+
+
+                //PETICIÓN A LA API
+
+                // Solicitud HttpGet
+                HttpResponseMessage response = await _httpClient
+                    .GetAsync($"feed?start_date={_today}&end_date={endDate}&api_key={_apiKey}");
+
+                // Controlador para devolver una excepción en caso de respuesta fallida.
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new Exception("Ha ocurrido un error: " + response.StatusCode.ToString());
+                }
+
+                // Leer la respuesta y convertirla en JSON
+                string json = await response.Content.ReadAsStringAsync();
+
+                // Convertir JSON en objeto GeneralInfo
+                GeneralInfo generalInfo = JsonConvert.DeserializeObject<GeneralInfo>(json);
+
+                // Declaración de la lista con el ViewModel para agregarle elementos posteriormente
+                List<AsteroidViewModel> asteroidsList = new();
+
+                // Bucle que recorre todas las claves
+                foreach (string date in generalInfo.near_earth_objects.Keys)
+                {
+                    // Bucle que recorre todos los valores dentro de cada clave
+                    foreach (NearEarthObjects nearObject in generalInfo.near_earth_objects[date])
                     {
-                        AsteroidViewModel model = _autoMapper.Map<AsteroidViewModel>(nearObject);
-                        asteroidsList.Add(model);
+                        // Si el valor tiene potencial riesgo de impacto, se Mapea a ViewModel
+                        // y se agrega a la lista "asteroidsList"
+                        if (nearObject.is_potentially_hazardous_asteroid == true )
+                        {
+                            AsteroidViewModel model = _autoMapper
+                                .Map<AsteroidViewModel>(nearObject);
+                            asteroidsList.Add(model);
+                        }
                     }
                 }
+
+                /*
+                 * Se devuelve la lista con los siguientes requisitos:
+                 *  - Todos los elementos cuyo planeta sea "Earth"
+                 *  - Ordenado de mayor a menor por Diametro
+                 *  - Los tres primeros.
+                 */
+                return Ok(asteroidsList
+                    .Where(y => y.Planeta == "Earth")
+                    .OrderByDescending(x => x.Diametro)
+                    .Take(3));
             }
 
-            return Ok(asteroidsList
-                .OrderByDescending(x => x.Diametro).Take(3));
+            // Catch separados por cada excepción para futuras posibles modificaciones.
+            catch (ArgumentOutOfRangeException error)
+            {
+                return BadRequest(error.Message);
+            }
+            catch(ArgumentNullException error)
+            {
+                return BadRequest(error.Message);
+            }
+            catch(Exception error)
+            {
+                return BadRequest(error.Message);
+            }
         }
     }
 }
