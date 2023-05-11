@@ -1,14 +1,14 @@
 ﻿# Prueba técnica de Backend para Atmira
 
-## Índice
+## Índice 📝
 
 - [Descripción de la prueba](#descripcion)
 - [Restricciones](#restricciones)
 - [Endpoints](#endpoints)
-- [Casos de prueba](#casos-de-prueba)
+- [Pruebas](#pruebas)
  
 <a name="descripcion"></a>
-### Descripción de la prueba
+### Descripción de la prueba ✏️
 Exponer un endpoint que reciba un número de días entre 1 y 7 y que devuelva un listado en 
 formato json con el top 3 de asteroides más grandes con potencial riesgo de impacto en el 
 planeta Tierra entre el día de hoy y la fecha obtenida de sumar a la fecha de hoy el número de 
@@ -41,7 +41,7 @@ Campos de respuesta del endpoint /asteroids, devolver json con:
 - **planeta**: "close_approach_date:orbiting_body"
 
 <a name="restricciones"></a>
-### Restricciones
+### Restricciones 🔒
 
 #### Tecnológicas 💻
  El planteamiento es se utilice las siguientes herramientas, pero no se está limitado a ellas.
@@ -55,7 +55,7 @@ En git o en cualquier repositorio en el que podamos acceder.
 Foco en estructura de código ordenado y buenas prácticas de programación.
 
 <a name="endpoints"></a>
-### Endpoints
+### Endpoints 📑
 #### Obtener asteroides potencialmente peligrosos
 Este endpoint es un método HttpGet que permite obtener una lista de los tres asteroides más grandes
 con potencial de riesgo de impacto en el planeta Tierra entre el día de hoy y una fecha específica 
@@ -102,8 +102,9 @@ Salida:
 
 >*Los datos obtenidos varían según el día, pues la peticion se realiza a partir de la fecha actual*
 
-<a name="casos-de-prueba"></a>
-### Casos de prueba 💊
+<a name="pruebas"></a>
+### Pruebas 💊
+#### Casos de prueba 🧪
 |Entrada|Salida|
 | ----- | ---- |
 | Rango entre 1 y 7 | Respuesta correcta |
@@ -111,3 +112,50 @@ Salida:
 | Mayor que 7 | BadRequest("Introduce un número entre 1 y 7.") |
 | NULL | BadRequest("El valor del parámetro days no puede ser nulo.") |
 | String | BadRequest("El valor del parámetro days debe ser un número.") |
+
+#### Mocks 🧾
+Se han mockeado los datos obtenidos del controlador a partir de una lista implementada a mano, 
+así se pueden comprobar los datos correctos de la API sin tener que volver a realizar una consulta
+con datos distintos.
+
+La lista ha sido la siguiente:
+```
+List<AsteroidViewModel> asteroids = new() 
+{
+    new AsteroidViewModel
+    {
+        Nombre = "Asteroid 1",
+        Diametro = 1000,
+        Planeta = "Earth",
+        Velocidad = "2563.2563"
+    },
+    new AsteroidViewModel
+    {
+        Nombre = "Asteroid 2",
+        Diametro = 2000,
+        Planeta = "Earth",
+        Velocidad = "2563.2563"
+    },
+    new AsteroidViewModel
+    {
+        Nombre = "Asteroid 3",
+        Diametro = 3000,
+        Planeta = "Earth",
+        Velocidad = "2563.2563"
+    }
+};
+```
+
+Comprobando los siguiente campos:
+- `Assert.That(result, Is.InstanceOf<OkObjectResult>());`
+-> Comprueba que *result* sea una instancia de *OkObjectResult*
+
+- `Assert.That(resultAsteroids, Has.Count.EqualTo(3));` 
+-> Se comprueba que la dimensión de la lista sea igual a 3.
+
+- `Assert.That(resultAsteroids[0].Diametro, Is.EqualTo(1000));`
+-> Se comprueba que el diametro del asteroide en la posición *[0]* sea 1000
+
+- `Assert.That(resultAsteroids[1].Nombre, Is.EqualTo("Asteroid 2"));`
+-> Se comprueba que el nombre del asteroide en la posición *[1]* sea *Asteroid 2*
+

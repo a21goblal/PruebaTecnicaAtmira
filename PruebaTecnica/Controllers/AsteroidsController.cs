@@ -2,11 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using PruebaTecnica.Models;
+using PruebaTecnica.Services.Interfaces;
 
 namespace PruebaTecnica.Controllers
 {
     [ApiController]
-    public class AsteroidsController : Controller
+    public class AsteroidsController : Controller, IAsteroidsController
     {
         // Cliente Http para realizar las consultas a la API
         private readonly HttpClient _httpClient;
