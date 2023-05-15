@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using PruebaTecnica.Models;
+using PruebaTecnica.Services;
 using PruebaTecnica.Services.Interfaces;
+using System.Net.Http;
 
 namespace PruebaTecnica.Controllers
 {
@@ -23,10 +25,13 @@ namespace PruebaTecnica.Controllers
         // de código.
         private readonly string _apiKey = "DEMO_KEY";     
 
-        public AsteroidsController(IMapper mapper)
+        public AsteroidsController(HttpClient httpClient)
         {
-            _httpClient = new HttpClient();
-            _httpClient.BaseAddress = new Uri("https://api.nasa.gov/neo/rest/v1/");
+            _httpClient = httpClient;
+            var config = new MapperConfiguration(cfg => {
+                cfg.AddProfile<AutoMapperProfiles>();
+            });
+            IMapper mapper = config.CreateMapper();
             _autoMapper = mapper;
         }
 
@@ -78,12 +83,12 @@ namespace PruebaTecnica.Controllers
 
                 // Solicitud HttpGet
                 HttpResponseMessage response = await _httpClient
-                    .GetAsync($"feed?start_date={_today}&end_date={endDate}&api_key={_apiKey}");
+                    .GetAsync($"https://api.nasa.gov/neo/rest/v1/feed?start_date={_today}&end_date={endDate}&api_key={_apiKey}");
 
                 // Controlador para devolver una excepción en caso de respuesta fallida.
                 if (!response.IsSuccessStatusCode)
                 {
-                    throw new Exception("Ha ocurrido un error: " + response.StatusCode.ToString());
+                    return StatusCode((int)response.StatusCode, $"Ha ocurrido un error: {response.StatusCode}");
                 }
 
                 // Leer la respuesta y convertirla en JSON
@@ -130,10 +135,6 @@ namespace PruebaTecnica.Controllers
                 return BadRequest(error.Message);
             }
             catch(ArgumentNullException error)
-            {
-                return BadRequest(error.Message);
-            }
-            catch(Exception error)
             {
                 return BadRequest(error.Message);
             }

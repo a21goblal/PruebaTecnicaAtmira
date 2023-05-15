@@ -114,48 +114,6 @@ Salida:
 | String | BadRequest("El valor del parámetro days debe ser un número.") |
 
 #### Mocks 🧾
-Se han mockeado los datos obtenidos del controlador a partir de una lista implementada a mano, 
-así se pueden comprobar los datos correctos de la API sin tener que volver a realizar una consulta
-con datos distintos.
-
-La lista ha sido la siguiente:
-```
-List<AsteroidViewModel> asteroids = new() 
-{
-    new AsteroidViewModel
-    {
-        Nombre = "Asteroid 1",
-        Diametro = 1000,
-        Planeta = "Earth",
-        Velocidad = "2563.2563"
-    },
-    new AsteroidViewModel
-    {
-        Nombre = "Asteroid 2",
-        Diametro = 2000,
-        Planeta = "Earth",
-        Velocidad = "2563.2563"
-    },
-    new AsteroidViewModel
-    {
-        Nombre = "Asteroid 3",
-        Diametro = 3000,
-        Planeta = "Earth",
-        Velocidad = "2563.2563"
-    }
-};
-```
-
-Comprobando los siguiente campos:
-- `Assert.That(result, Is.InstanceOf<OkObjectResult>());`
--> Comprueba que *result* sea una instancia de *OkObjectResult*
-
-- `Assert.That(resultAsteroids, Has.Count.EqualTo(3));` 
--> Se comprueba que la dimensión de la lista sea igual a 3.
-
-- `Assert.That(resultAsteroids[0].Diametro, Is.EqualTo(1000));`
--> Se comprueba que el diametro del asteroide en la posición *[0]* sea 1000
-
-- `Assert.That(resultAsteroids[1].Nombre, Is.EqualTo("Asteroid 2"));`
--> Se comprueba que el nombre del asteroide en la posición *[1]* sea *Asteroid 2*
+Se ha mockead la petición Http que se le asigna al controlador dandole un StatusCode en cada 
+caso de uso para comprobar que cumple con su función.
 

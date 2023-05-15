@@ -1,9 +1,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using PruebaTecnica.Controllers;
-using PruebaTecnica.Models;
 using PruebaTecnica.Services;
-using System.Reflection.Metadata;
 
 namespace TestPruebaTecnica
 {
@@ -17,12 +15,13 @@ namespace TestPruebaTecnica
         [SetUp]
         public void SetUp()
         {
+            HttpClient client = new HttpClient();
             var config = new MapperConfiguration(cfg => {
                 cfg.AddProfile<AutoMapperProfiles>();
             });
             IMapper mapper = config.CreateMapper();
 
-            _controller = new AsteroidsController(mapper);
+            _controller = new AsteroidsController(client);
         }
 
         // En este test se comprueba el correcto funcionamiento para los datos correctos.
@@ -36,7 +35,7 @@ namespace TestPruebaTecnica
             var result = await _controller.GetAsteroids(days);
 
             // Assert
-            Assert.IsInstanceOf<OkObjectResult>(result);
+            Assert.That(result, Is.InstanceOf<OkObjectResult>());
         }
 
         // En este test se comprueba el correcto funcionamiento para los datos fuera de rango.
@@ -48,21 +47,18 @@ namespace TestPruebaTecnica
             var result = await _controller.GetAsteroids(days);
 
             // Assert
-            Assert.IsInstanceOf<BadRequestObjectResult>(result);
+            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
         // En este test se comprueba el correcto funcionamiento para los datos nulos.
         [Test]
         public async Task GetAsteroids_TestWrong_NullDays()
         {
-            // Arrange
-            string days = null;
-
             // Act
-            var result = await _controller.GetAsteroids(days);
+            var result = await _controller.GetAsteroids(null);
 
             // Assert
-            Assert.IsInstanceOf<BadRequestObjectResult>(result);
+            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
         // En este test se comprueba el correcto funcionamiento para los datos con tipo incorrecto.
@@ -76,7 +72,7 @@ namespace TestPruebaTecnica
             var result = await _controller.GetAsteroids(days);
 
             // Assert
-            Assert.IsInstanceOf<BadRequestObjectResult>(result);
+            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
     }
 }

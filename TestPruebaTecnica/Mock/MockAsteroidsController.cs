@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Moq;
-using PruebaTecnica.Models;
-using PruebaTecnica.Services.Interfaces;
+using Moq.Protected;
+using PruebaTecnica.Controllers;
+using System.Net;
 
 namespace TestPruebaTecnica.Mock
 {
@@ -10,49 +11,99 @@ namespace TestPruebaTecnica.Mock
         [Test]
         public async Task GetAsteroids_ReturnsAListOfAsteroids()
         {
-            // Lista mockeada de la API
-            List<AsteroidViewModel> asteroids = new() 
+            string path = "C:\\Users\\ALEJANDRO.GOMEZ\\source\\repos\\PruebaTecnicaAtmira\\TestPruebaTecnica\\Resources\\MockResponse.json";
+            using StreamReader jsonStream = File.OpenText(path);
+            var json = jsonStream.ReadToEnd();
+
+            Mock<HttpMessageHandler> handlerMock = new Mock<HttpMessageHandler>();
+            HttpResponseMessage response = new HttpResponseMessage
             {
-                new AsteroidViewModel
-                {
-                    Nombre = "Asteroid 1",
-                    Diametro = 1000,
-                    Planeta = "Earth",
-                    Velocidad = "2563.2563"
-                },
-                new AsteroidViewModel
-                {
-                    Nombre = "Asteroid 2",
-                    Diametro = 2000,
-                    Planeta = "Earth",
-                    Velocidad = "2563.2563"
-                },
-                new AsteroidViewModel
-                {
-                    Nombre = "Asteroid 3",
-                    Diametro = 3000,
-                    Planeta = "Earth",
-                    Velocidad = "2563.2563"
-                }
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(json)
             };
 
-            // Instancia de la interfaz del controlador
-            Mock<IAsteroidsController> mockController = new();
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(response);
 
-            // Configuración del método GetAsteroids para que devuelva la lista de asteroides
-            mockController.Setup(c => c.GetAsteroids(It.IsAny<string>()))
-                .ReturnsAsync(new OkObjectResult(asteroids));
+            HttpClient httpClient = new HttpClient(handlerMock.Object);
+            
+            var asteroidsController = new AsteroidsController(httpClient);
 
-            // Se obtiene el resultado del método GetAsteroids
-            IActionResult result = await mockController.Object.GetAsteroids("3");
+            // Ejecutar el método GetAsteroids y obtener el resultado
+            var result = await asteroidsController.GetAsteroids("7") as OkObjectResult;
 
-            // Se verifica que se ha devuelto una respuesta Ok y que tiene los asteroides simulados
+            // Verificar que el resultado es una lista de tres elementos
             Assert.That(result, Is.InstanceOf<OkObjectResult>());
-            OkObjectResult okResult = (OkObjectResult)result;
-            List <AsteroidViewModel> resultAsteroids = (List<AsteroidViewModel>)okResult.Value;
-            Assert.That(resultAsteroids, Has.Count.EqualTo(3));
-            Assert.That(resultAsteroids[0].Diametro, Is.EqualTo(1000));
-            Assert.That(resultAsteroids[1].Nombre, Is.EqualTo("Asteroid 2"));
+            Assert.That(result.StatusCode, Is.EqualTo(200));
+        }
+
+        [Test]
+        public async Task GetAsteroids_ReturnsA400([Values("hola", "9", "-1")] string days)
+        {
+            string path = "C:\\Users\\ALEJANDRO.GOMEZ\\source\\repos\\PruebaTecnicaAtmira\\TestPruebaTecnica\\Resources\\MockResponse.json";
+            using StreamReader jsonStream = File.OpenText(path);
+            var json = jsonStream.ReadToEnd();
+
+            Mock<HttpMessageHandler> handlerMock = new Mock<HttpMessageHandler>();
+            HttpResponseMessage response = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(json)
+            };
+
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(response);
+
+            HttpClient httpClient = new HttpClient(handlerMock.Object);
+
+            var asteroidsController = new AsteroidsController(httpClient);
+
+            // Ejecutar el método GetAsteroids y obtener el resultado
+            var result = await asteroidsController.GetAsteroids(days) as ObjectResult;
+
+            // Verificar que el resultado es una lista de tres elementos
+            Assert.That(result, Is.InstanceOf<ObjectResult>());
+            Assert.That(result.StatusCode, Is.EqualTo(400));
+        }
+
+        [Test]
+        public async Task GetAsteroids_ReturnsA429()
+        {
+            Mock<HttpMessageHandler> handlerMock = new Mock<HttpMessageHandler>();
+            HttpResponseMessage response = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.TooManyRequests,
+                ReasonPhrase = "Too many requests"
+            };
+
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(response);
+
+            HttpClient httpClient = new HttpClient(handlerMock.Object);
+
+            var asteroidsController = new AsteroidsController(httpClient);
+
+            // Ejecutar el método GetAsteroids y obtener el resultado
+            var result = await asteroidsController.GetAsteroids("7") as ObjectResult;
+
+            // Verificar que el resultado es lo esperado
+            Assert.That(result, Is.InstanceOf<ObjectResult>());
+            Assert.That(result.StatusCode, Is.EqualTo(429));
         }
     }
 }
