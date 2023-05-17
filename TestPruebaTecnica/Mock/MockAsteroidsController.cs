@@ -8,10 +8,15 @@ namespace TestPruebaTecnica.Mock
 {
     public class MockAsteridsController
     {
+        //TODO: Sólo pruebas los códigos de respuesta, la gracia de mockear es que
+        //pruebes que obtienes los objetos con las mismas propiedades que en el json
         [Test]
         public async Task GetAsteroids_ReturnsAListOfAsteroids()
         {
-            string path = "C:\\Users\\ALEJANDRO.GOMEZ\\source\\repos\\PruebaTecnicaAtmira\\TestPruebaTecnica\\Resources\\MockResponse.json";
+            //TODO: nada de rutas absolutas que me fallan los test jiji
+            //además, evita duplicar la ruta en cada método de prueba
+            string path = "C:\\Proyectos\\PRUEBAS DE NIVEL\\ALEJANDROPruebaTecnicaAtmira\\TestPruebaTecnica\\Resources\\MockResponse.json";
+
             using StreamReader jsonStream = File.OpenText(path);
             var json = jsonStream.ReadToEnd();
 
@@ -45,7 +50,7 @@ namespace TestPruebaTecnica.Mock
         [Test]
         public async Task GetAsteroids_ReturnsA400([Values("hola", "9", "-1")] string days)
         {
-            string path = "C:\\Users\\ALEJANDRO.GOMEZ\\source\\repos\\PruebaTecnicaAtmira\\TestPruebaTecnica\\Resources\\MockResponse.json";
+            string path = "C:\\Proyectos\\PRUEBAS DE NIVEL\\ALEJANDROPruebaTecnicaAtmira\\TestPruebaTecnica\\Resources\\MockResponse.json";
             using StreamReader jsonStream = File.OpenText(path);
             var json = jsonStream.ReadToEnd();
 
@@ -71,6 +76,7 @@ namespace TestPruebaTecnica.Mock
             // Ejecutar el método GetAsteroids y obtener el resultado
             var result = await asteroidsController.GetAsteroids(days) as ObjectResult;
 
+            //TODO: has copiado y pegado el mismo comentario y no tiene sentido
             // Verificar que el resultado es una lista de tres elementos
             Assert.That(result, Is.InstanceOf<ObjectResult>());
             Assert.That(result.StatusCode, Is.EqualTo(400));

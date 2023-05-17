@@ -52,6 +52,8 @@ namespace PruebaTecnica.Controllers
         {
             try
             {
+                //TODO: las respuestas de control de errores deben devolverse con un formato json,
+                //ahora solo devuelve un texto plano
                 // Condicional que controla si se ha introducido valor.
                 if (days is null)
                 {
@@ -78,9 +80,10 @@ namespace PruebaTecnica.Controllers
                 // Variable con la fecha final formateada al valor requerido por la URL
                 string endDate = DateTime.Today.AddDays(parsedDays).ToString("yyyy-MM-dd");
 
-
+                //TODO: extrae la petición a la API y la lógica de parseo/filtrado a un servicio
                 //PETICIÓN A LA API
 
+                //TODO: no hardcodees
                 // Solicitud HttpGet
                 HttpResponseMessage response = await _httpClient
                     .GetAsync($"https://api.nasa.gov/neo/rest/v1/feed?start_date={_today}&end_date={endDate}&api_key={_apiKey}");
@@ -117,6 +120,8 @@ namespace PruebaTecnica.Controllers
                     }
                 }
 
+                //TODO: controla el mensaje de respuesta http cuando la lista que devuelve es vacía, actualmente devuelve
+                //200 y hay otro statuscode para una petición buena con respuesta vacía, investigalo
                 /*
                  * Se devuelve la lista con los siguientes requisitos:
                  *  - Todos los elementos cuyo planeta sea "Earth"

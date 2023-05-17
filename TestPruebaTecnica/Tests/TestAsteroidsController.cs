@@ -19,6 +19,7 @@ namespace TestPruebaTecnica
             var config = new MapperConfiguration(cfg => {
                 cfg.AddProfile<AutoMapperProfiles>();
             });
+            //TODO: este mapper no hace nada
             IMapper mapper = config.CreateMapper();
 
             _controller = new AsteroidsController(client);
